@@ -1,0 +1,34 @@
+import { isEmpty } from "./isEmpty"
+
+type ConvertToLocaleParams = {
+  amount: number
+  currency_code: string
+  minimumFractionDigits?: number
+  maximumFractionDigits?: number
+  locale?: string
+}
+
+export const convertToLocale = ({
+  amount,
+  currency_code,
+  minimumFractionDigits,
+  maximumFractionDigits,
+  locale,
+}: ConvertToLocaleParams) => {
+  if (!currency_code || isEmpty(currency_code)) {
+    return amount.toString()
+  }
+
+  // Türk Lirası için otomatik locale seçimi
+  const finalLocale = locale || (currency_code.toLowerCase() === 'try' ? 'tr-TR' : 'en-US')
+  
+  // Medusa fiyatları kuruş/cent cinsinden tutuyor, liraya çevir
+  const amountInMainUnit = amount / 100
+
+  return new Intl.NumberFormat(finalLocale, {
+    style: "currency",
+    currency: currency_code,
+    minimumFractionDigits: minimumFractionDigits ?? 2,
+    maximumFractionDigits: maximumFractionDigits ?? 2,
+  }).format(amountInMainUnit)
+}
