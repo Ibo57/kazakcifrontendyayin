@@ -5,6 +5,7 @@ import { Facebook, Instagram, Twitter } from "lucide-react"
 import Image from "next/image"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import NodusSignature from "@modules/layout/components/nodus-signature"
 
 export default async function Footer() {
   const { collections } = await listCollections({
@@ -200,6 +201,11 @@ export default async function Footer() {
               )}
             </ul>
           </div>
+        </div>
+
+        {/* NodusCode Signature */}
+        <div className="border-t border-gray-200">
+          <NodusSignature />
         </div>
 
         {/* Copyright */}

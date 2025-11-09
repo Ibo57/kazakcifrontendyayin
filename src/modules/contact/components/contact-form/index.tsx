@@ -79,10 +79,10 @@ export default function ContactForm() {
               <div>
                 <h3 className="font-bold text-gray-900 mb-1">E-posta</h3>
                 <a
-                  href="mailto:info@kazakci.com"
+                  href="mailto:info@roygarage.com"
                   className="text-orange-600 hover:text-orange-700 hover:underline"
                 >
-                  info@kazakci.com
+                  info@roygarage.com
                 </a>
                 <p className="text-sm text-gray-600 mt-2">
                   7/24 e-posta desteği
@@ -100,10 +100,10 @@ export default function ContactForm() {
               <div>
                 <h3 className="font-bold text-gray-900 mb-1">Telefon</h3>
                 <a
-                  href="tel:+905001234567"
+                  href="tel:+905322807944"
                   className="text-blue-600 hover:text-blue-700 hover:underline"
                 >
-                  +90 (500) 123 45 67
+                  0532 280 79 44
                 </a>
                 <p className="text-sm text-gray-600 mt-2">
                   Hafta içi: 09:00 - 18:00
@@ -121,9 +121,9 @@ export default function ContactForm() {
               <div>
                 <h3 className="font-bold text-gray-900 mb-1">Adres</h3>
                 <p className="text-gray-700">
-                  Örnek Mahallesi<br />
-                  Kazak Sokak No: 123<br />
-                  34000 İstanbul, Türkiye
+                  Orta Mah. Eminefendi Cad.<br />
+                  No: 12/B<br />
+                  Bayrampaşa/İstanbul
                 </p>
               </div>
             </div>
@@ -305,7 +305,7 @@ export default function ContactForm() {
               <div>
                 <p className="font-semibold">Kargo ücretsiz mi?</p>
                 <p className="text-gray-600 mt-1">
-                  500 TL ve üzeri alışverişlerde kargo ücretsizdir.
+                  1000 TL ve üzeri alışverişlerde kargo ücretsizdir.
                 </p>
               </div>
             </div>

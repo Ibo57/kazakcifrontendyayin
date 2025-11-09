@@ -31,6 +31,7 @@ npm run build
 # Step 4: Copy static files to standalone directory (CRITICAL!)
 echo "📁 Copying static files to standalone build..."
 if [ -d ".next/static" ]; then
+    mkdir -p .next/standalone/.next
     cp -r .next/static .next/standalone/.next/static
     echo "✓ Static files copied"
 else
