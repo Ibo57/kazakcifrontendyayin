@@ -13,8 +13,8 @@ const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
  */
 const nextConfig = {
   reactStrictMode: true,
-  // Standalone output disabled - using standard mode
-  // output: 'standalone',
+  // Standalone output enabled for Docker
+  output: 'standalone',
   // Make MEDUSA_BACKEND_URL available at runtime
   env: {
     MEDUSA_BACKEND_URL: process.env.MEDUSA_BACKEND_URL || 'http://127.0.0.1:9001',
@@ -55,6 +55,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.araskargo.com.tr",
       },
       ...(S3_HOSTNAME && S3_PATHNAME
         ? [

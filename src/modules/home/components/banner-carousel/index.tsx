@@ -3,33 +3,48 @@
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
+import { HttpTypes } from "@medusajs/types"
 
-const banners = [
-  {
-    id: 1,
-    image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&h=400&fit=crop",
-    title: "Kış Koleksiyonu",
-    subtitle: "Yeni Sezon Kazaklar",
-    link: "/store",
-  },
-  {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=1200&h=400&fit=crop",
-    title: "%50'ye Varan İndirim",
-    subtitle: "Hırkalar ve Montlar",
-    link: "/store",
-  },
-  {
-    id: 3,
-    image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=1200&h=400&fit=crop",
-    title: "Özel Tasarımlar",
-    subtitle: "El Yapımı Triko Ürünler",
-    link: "/store",
-  },
-]
+type BannerCarouselProps = {
+  collections?: HttpTypes.StoreCollection[]
+}
 
-export default function BannerCarousel() {
+export default function BannerCarousel({ collections }: BannerCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
+
+  // Create banners from collections or use default
+  const banners = collections && collections.length > 0
+    ? collections.slice(0, 3).map((collection, idx) => ({
+        id: idx + 1,
+        image: collection.metadata?.banner_image as string ||
+               `https://images.unsplash.com/photo-${['1490481651871-ab68de25d43d', '1445205170230-053b83016050', '1434389677669-e08b4cac3105'][idx]}?w=1200&h=400&fit=crop`,
+        title: collection.metadata?.banner_title as string || collection.title || "Koleksiyon",
+        subtitle: collection.metadata?.banner_subtitle as string || `${collection.products?.length || 0} Ürün`,
+        link: `/collections/${collection.handle}`,
+      }))
+    : [
+        {
+          id: 1,
+          image: "https://admin.kazakci.com/static/banner-1.png",
+          title: "Kış Koleksiyonu",
+          subtitle: "Yeni Sezon Kazaklar",
+          link: "/store",
+        },
+        {
+          id: 2,
+          image: "https://admin.kazakci.com/static/banner-2.png",
+          title: "%50'ye Varan İndirim",
+          subtitle: "Hırkalar ve Montlar",
+          link: "/store",
+        },
+        {
+          id: 3,
+          image: "https://admin.kazakci.com/static/banner-3.png",
+          title: "Özel Tasarımlar",
+          subtitle: "El Yapımı Triko Ürünler",
+          link: "/store",
+        },
+      ]
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -37,7 +52,7 @@ export default function BannerCarousel() {
     }, 5000) // Her 5 saniyede bir otomatik değişir
 
     return () => clearInterval(timer)
-  }, [])
+  }, [banners.length])
 
   const goToPrevious = () => {
     setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length)

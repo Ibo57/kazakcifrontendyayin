@@ -82,14 +82,18 @@ const CartDropdown = ({
       <Popover className="relative h-full">
         <PopoverButton className="h-full">
           <LocalizedClientLink
-            className="hover:text-ui-fg-base flex items-center gap-1"
+            className="hover:text-orange-600 flex items-center gap-2 relative transition-colors"
             href="/cart"
             data-testid="nav-cart-link"
           >
-            <span className="text-2xl">🛒</span>
-            {totalItems > 0 && (
-              <span className="text-sm font-medium">({totalItems})</span>
-            )}
+            <div className="relative">
+              <span className="text-3xl">🛒</span>
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-gradient-to-br from-orange-500 to-orange-600 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 shadow-lg border-2 border-white animate-in zoom-in duration-200">
+                  {totalItems}
+                </span>
+              )}
+            </div>
           </LocalizedClientLink>
         </PopoverButton>
         <Transition
@@ -196,7 +200,39 @@ const CartDropdown = ({
                       })}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-4">Vergiler ödeme sırasında hesaplanacaktır</p>
+
+                  {/* Ücretsiz Kargo Göstergesi */}
+                  {subtotal < 100000 ? (
+                    <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-2xl">🚚</span>
+                        <span className="text-sm font-semibold text-orange-800">
+                          {convertToLocale({
+                            amount: 100000 - subtotal,
+                            currency_code: cartState.currency_code,
+                          })}{" "}
+                          daha ekle, ücretsiz kargo kazan!
+                        </span>
+                      </div>
+                      <div className="w-full bg-orange-200 rounded-full h-2">
+                        <div
+                          className="bg-orange-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min((subtotal / 100000) * 100, 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">✅</span>
+                        <span className="text-sm font-semibold text-green-800">
+                          Ücretsiz kargo kazandınız!
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-sm text-gray-600 mb-4">Kargo ve vergiler ödeme sırasında hesaplanacaktır</p>
                   <LocalizedClientLink href="/cart" passHref>
                     <Button
                       className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-base"

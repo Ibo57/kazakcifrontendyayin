@@ -22,7 +22,7 @@ import { getRegion } from "./regions"
  */
 export async function retrieveCart(cartId?: string, fields?: string) {
   const id = cartId || (await getCartId())
-  fields ??= "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name"
+  fields ??= "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name, *payment_collection, *payment_collection.payment_sessions"
 
   if (!id) {
     return null
@@ -250,6 +250,73 @@ export async function initiatePaymentSession(
       return resp
     })
     .catch(medusaError)
+}
+
+/**
+ * Authorize payment session (triggers 3D Secure for iyzico)
+ * CLIENT-SIDE function - can be called from client components
+ */
+export async function authorizePaymentSession(
+  paymentCollectionId: string,
+  sessionId: string
+) {
+  if (!paymentCollectionId) {
+    throw new Error("Payment collection ID is required")
+  }
+
+  if (!sessionId) {
+    throw new Error("Payment session ID is required")
+  }
+
+  // Use NEXT_PUBLIC env var for client-side access
+  const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+
+  if (!backendUrl) {
+    throw new Error("Backend URL not configured")
+  }
+
+  console.log("[authorizePaymentSession] Calling:", {
+    backendUrl,
+    paymentCollectionId,
+    sessionId
+  })
+
+  try {
+    const response = await fetch(
+      `${backendUrl}/store/payment-collections/${paymentCollectionId}/payment-sessions/${sessionId}/authorize`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      }
+    )
+
+    console.log("[authorizePaymentSession] Response status:", response.status)
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("[authorizePaymentSession] Error response:", errorText)
+
+      let errorData
+      try {
+        errorData = JSON.parse(errorText)
+      } catch {
+        errorData = { message: errorText }
+      }
+
+      throw new Error(errorData.message || `Authorization failed with status ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log("[authorizePaymentSession] Success:", data)
+    return data
+
+  } catch (error: any) {
+    console.error("[authorizePaymentSession] Fetch error:", error)
+    throw error
+  }
 }
 
 export async function applyPromotions(codes: string[]) {

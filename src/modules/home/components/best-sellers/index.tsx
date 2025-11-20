@@ -15,7 +15,7 @@ export default async function BestSellers({
   } = await listProducts({
     regionId: region.id,
     queryParams: {
-      limit: 8,
+      limit: 10,
       fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata,+tags",
       order: "created_at",
     },
@@ -38,8 +38,8 @@ export default async function BestSellers({
           Tümünü Gör
         </InteractiveLink>
       </div>
-      <ul className="grid grid-cols-2 small:grid-cols-4 gap-x-4 gap-y-8 small:gap-x-6 small:gap-y-12">
-        {pricedProducts.slice(0, 8).map((product) => (
+      <ul className="grid grid-cols-2 small:grid-cols-5 gap-x-4 gap-y-8 small:gap-x-6 small:gap-y-12">
+        {pricedProducts.slice(0, 10).map((product) => (
           <li key={product.id}>
             <ProductPreview product={product} region={region} isFeatured />
           </li>

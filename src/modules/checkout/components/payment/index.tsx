@@ -1,13 +1,13 @@
 "use client"
 
 import { RadioGroup } from "@headlessui/react"
-import { isStripe as isStripeFunc, paymentInfoMap } from "@lib/constants"
-import { initiatePaymentSession } from "@lib/data/cart"
+import { isIyzico as isIyzicoFunc, paymentInfoMap } from "@lib/constants"
+import { initiatePaymentSession, authorizePaymentSession, retrieveCart } from "@lib/data/cart"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import PaymentContainer, {
-  StripeCardContainer,
+  IyzicoCardContainer,
 } from "@modules/checkout/components/payment-container"
 import Divider from "@modules/common/components/divider"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
@@ -27,8 +27,8 @@ const Payment = ({
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [cardBrand, setCardBrand] = useState<string | null>(null)
-  const [cardComplete, setCardComplete] = useState(false)
+  const [iyzicoCardData, setIyzicoCardData] = useState<any>(null)
+  const [iyzicoCardComplete, setIyzicoCardComplete] = useState(false)
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
     activeSession?.provider_id ?? ""
   )
@@ -39,12 +39,13 @@ const Payment = ({
 
   const isOpen = searchParams.get("step") === "payment"
 
-  const isStripe = isStripeFunc(selectedPaymentMethod)
+  const isIyzico = isIyzicoFunc(selectedPaymentMethod)
 
   const setPaymentMethod = async (method: string) => {
     setError(null)
     setSelectedPaymentMethod(method)
-    if (isStripeFunc(method)) {
+    if (isIyzicoFunc(method)) {
+      // Initialize iyzico payment session
       await initiatePaymentSession(cart, {
         provider_id: method,
       })
@@ -76,11 +77,70 @@ const Payment = ({
   const handleSubmit = async () => {
     setIsLoading(true)
     try {
-      const shouldInputCard =
-        isStripeFunc(selectedPaymentMethod) && !activeSession
-
       const checkActiveSession =
         activeSession?.provider_id === selectedPaymentMethod
+
+      // For iyzico, we need to pass card data and authorize
+      if (isIyzicoFunc(selectedPaymentMethod)) {
+        if (!iyzicoCardComplete || !iyzicoCardData) {
+          setError("Lütfen kart bilgilerinizi eksiksiz doldurun")
+          setIsLoading(false)
+          return
+        }
+
+        try {
+          console.log("[Payment] Starting iyzico payment flow...")
+          console.log("[Payment] Card data:", iyzicoCardData)
+
+          // Step 1: Initialize payment session with card data
+          const sessionResult = await initiatePaymentSession(cart, {
+            provider_id: selectedPaymentMethod,
+            data: {
+              payment_method_data: iyzicoCardData
+            }
+          })
+
+          console.log("[Payment] Session result:", sessionResult)
+
+          // Step 2: Get the payment session ID from result
+          // Check if result is the cart object or wrapped
+          const resultCart = sessionResult?.cart || sessionResult
+          const paymentSession = resultCart?.payment_collection?.payment_sessions?.find(
+            (s: any) => s.provider_id === selectedPaymentMethod
+          )
+
+          console.log("[Payment] Found payment session:", paymentSession)
+
+          if (!paymentSession) {
+            console.error("[Payment] No payment session found in result")
+            setError("Ödeme oturumu oluşturulamadı")
+            setIsLoading(false)
+            return
+          }
+
+          // Step 3: Authorize payment (triggers 3D Secure)
+          console.log("[Payment] Authorizing payment session:", paymentSession.id)
+          const paymentCollectionId = cart.payment_collection?.id
+          if (!paymentCollectionId) {
+            throw new Error("Payment collection ID not found")
+          }
+          const authResult = await authorizePaymentSession(paymentCollectionId, paymentSession.id)
+          console.log("[Payment] Authorization result:", authResult)
+
+          // Step 4: Navigate to review (3DS HTML will be shown there)
+          return router.push(
+            pathname + "?" + createQueryString("step", "review"),
+            {
+              scroll: false,
+            }
+          )
+        } catch (err: any) {
+          console.error("[Payment] Error in iyzico flow:", err)
+          setError(err.message || "Ödeme işlemi sırasında hata oluştu")
+          setIsLoading(false)
+          return
+        }
+      }
 
       if (!checkActiveSession) {
         await initiatePaymentSession(cart, {
@@ -88,14 +148,13 @@ const Payment = ({
         })
       }
 
-      if (!shouldInputCard) {
-        return router.push(
-          pathname + "?" + createQueryString("step", "review"),
-          {
-            scroll: false,
-          }
-        )
-      }
+      // For manual payment (kapıda ödeme), go to review
+      return router.push(
+        pathname + "?" + createQueryString("step", "review"),
+        {
+          scroll: false,
+        }
+      )
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -185,14 +244,13 @@ const Payment = ({
               >
                 {availablePaymentMethods.map((paymentMethod) => (
                   <div key={paymentMethod.id}>
-                    {isStripeFunc(paymentMethod.id) ? (
-                      <StripeCardContainer
+                    {isIyzicoFunc(paymentMethod.id) ? (
+                      <IyzicoCardContainer
                         paymentProviderId={paymentMethod.id}
                         selectedPaymentOptionId={selectedPaymentMethod}
                         paymentInfoMap={paymentInfoMap}
-                        setCardBrand={setCardBrand}
-                        setError={setError}
-                        setCardComplete={setCardComplete}
+                        setCardData={setIyzicoCardData}
+                        setCardComplete={setIyzicoCardComplete}
                       />
                     ) : (
                       <PaymentContainer
@@ -232,13 +290,13 @@ const Payment = ({
             onClick={handleSubmit}
             isLoading={isLoading}
             disabled={
-              (isStripe && !cardComplete) ||
+              (isIyzico && !iyzicoCardComplete) ||
               (!selectedPaymentMethod && !paidByGiftcard)
             }
             data-testid="submit-payment-button"
           >
-            {!activeSession && isStripeFunc(selectedPaymentMethod)
-              ? "Kart Bilgilerini Gir"
+            {isIyzico
+              ? "Ödemeye Geç"
               : "Sipariş Onayına Geç"}
           </Button>
         </div>
@@ -272,8 +330,8 @@ const Payment = ({
                     )}
                   </Container>
                   <Text>
-                    {isStripeFunc(selectedPaymentMethod) && cardBrand
-                      ? cardBrand
+                    {isIyzico
+                      ? "iyzico ile Güvenli Ödeme"
                       : "Bir sonraki adımda girilecek"}
                   </Text>
                 </div>

@@ -1,6 +1,6 @@
 import { Radio as RadioGroupOption } from "@headlessui/react"
 import { Text, clx } from "@medusajs/ui"
-import React, { useContext, useMemo, type JSX } from "react"
+import React, { useContext, useMemo, useState, type JSX } from "react"
 
 import Radio from "@modules/common/components/radio"
 
@@ -10,6 +10,7 @@ import { CardElement } from "@stripe/react-stripe-js"
 import { StripeCardElementOptions } from "@stripe/stripe-js"
 import PaymentTest from "../payment-test"
 import { StripeContext } from "../payment-wrapper/stripe-wrapper"
+import IyzicoCardForm from "../iyzico-card-form"
 
 type PaymentContainerProps = {
   paymentProviderId: string
@@ -64,6 +65,34 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
 }
 
 export default PaymentContainer
+
+export const IyzicoCardContainer = ({
+  paymentProviderId,
+  selectedPaymentOptionId,
+  paymentInfoMap,
+  disabled = false,
+  setCardData,
+  setCardComplete,
+}: Omit<PaymentContainerProps, "children"> & {
+  setCardData: (data: any) => void
+  setCardComplete: (complete: boolean) => void
+}) => {
+  return (
+    <PaymentContainer
+      paymentProviderId={paymentProviderId}
+      selectedPaymentOptionId={selectedPaymentOptionId}
+      paymentInfoMap={paymentInfoMap}
+      disabled={disabled}
+    >
+      {selectedPaymentOptionId === paymentProviderId && (
+        <IyzicoCardForm
+          onCardDataChange={setCardData}
+          onValidChange={setCardComplete}
+        />
+      )}
+    </PaymentContainer>
+  )
+}
 
 export const StripeCardContainer = ({
   paymentProviderId,

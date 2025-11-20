@@ -24,18 +24,21 @@ export default async function Home(props: {
   const region = await getRegion(countryCode)
 
   const { collections } = await listCollections({
-    fields: "id, handle, title",
+    fields: "*products.id",
   })
 
   if (!collections || !region) {
     return null
   }
 
+  // Hero için featured collection'ı bul veya ilk collection'ı kullan
+  const heroCollection = collections.find(c => c.metadata?.featured === true) || collections[0]
+
   return (
     <>
-      <Hero />
+      <Hero collection={heroCollection} />
       <BestSellers region={region} />
-      <BannerCarousel />
+      <BannerCarousel collections={collections} />
       <DiscountedProducts region={region} />
       <div className="py-12">
         <ul className="flex flex-col gap-x-6">

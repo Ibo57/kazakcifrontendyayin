@@ -21,9 +21,9 @@ export const convertToLocale = ({
 
   // Türk Lirası için otomatik locale seçimi
   const finalLocale = locale || (currency_code.toLowerCase() === 'try' ? 'tr-TR' : 'en-US')
-  
-  // Medusa fiyatları kuruş/cent cinsinden tutuyor, liraya çevir
-  // NOT: get-product-price.ts'de zaten 100 ile çarpıldı, burada sadece 100'e böl
+
+  // Medusa fiyatları kuruş/cent cinsinden tutuyor, ana birime (TL/USD) çevir
+  // Örnek: 18900 kuruş = 189 TL
   const amountInMainUnit = amount / 100
 
   // Akıllı ondalık gösterimi: Tam sayıysa kuruş gösterme, değilse göster

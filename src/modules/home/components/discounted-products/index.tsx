@@ -11,14 +11,23 @@ export default async function DiscountedProducts({
   region: HttpTypes.StoreRegion
 }) {
   const {
-    response: { products: pricedProducts },
+    response: { products: allProducts },
   } = await listProducts({
     regionId: region.id,
     queryParams: {
-      limit: 8,
+      limit: 50,
       fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata,+tags",
       order: "created_at",
     },
+  })
+
+  // Gerçekten indirimli ürünleri filtrele
+  const pricedProducts = allProducts.filter((product) => {
+    return product.variants?.some((variant) => {
+      const calculated = variant.calculated_price?.calculated_amount
+      const original = variant.calculated_price?.original_amount
+      return calculated && original && calculated < original
+    })
   })
 
   if (!pricedProducts || pricedProducts.length === 0) {
@@ -43,8 +52,8 @@ export default async function DiscountedProducts({
           Tümünü Gör
         </LocalizedClientLink>
       </div>
-      <ul className="grid grid-cols-2 small:grid-cols-4 gap-x-4 gap-y-8 small:gap-x-6 small:gap-y-12">
-        {pricedProducts.slice(0, 8).map((product) => (
+      <ul className="grid grid-cols-2 small:grid-cols-5 gap-x-4 gap-y-8 small:gap-x-6 small:gap-y-12">
+        {pricedProducts.slice(0, 10).map((product) => (
           <li key={product.id}>
             <ProductPreview product={product} region={region} isFeatured showDiscount />
           </li>

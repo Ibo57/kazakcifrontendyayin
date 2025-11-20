@@ -1,11 +1,10 @@
 "use client"
 
-import { isManual, isStripe } from "@lib/constants"
+import { isManual, isIyzico } from "@lib/constants"
 import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
-import { useElements, useStripe } from "@stripe/react-stripe-js"
-import React, { useState } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import ErrorMessage from "../error-message"
 
 type PaymentButtonProps = {
@@ -27,9 +26,9 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   const paymentSession = cart.payment_collection?.payment_sessions?.[0]
 
   switch (true) {
-    case isStripe(paymentSession?.provider_id):
+    case isIyzico(paymentSession?.provider_id):
       return (
-        <StripePaymentButton
+        <IyzicoPaymentButton
           notReady={notReady}
           cart={cart}
           data-testid={dataTestId}
@@ -40,11 +39,11 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
         <ManualTestPaymentButton notReady={notReady} data-testid={dataTestId} />
       )
     default:
-      return <Button disabled>Select a payment method</Button>
+      return <Button disabled>Ödeme yöntemi seçin</Button>
   }
 }
 
-const StripePaymentButton = ({
+const IyzicoPaymentButton = ({
   cart,
   notReady,
   "data-testid": dataTestId,
@@ -55,97 +54,93 @@ const StripePaymentButton = ({
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-
-  const onPaymentCompleted = async () => {
-    await placeOrder()
-      .catch((err) => {
-        setErrorMessage(err.message)
-      })
-      .finally(() => {
-        setSubmitting(false)
-      })
-  }
-
-  const stripe = useStripe()
-  const elements = useElements()
-  const card = elements?.getElement("card")
+  const formRef = useRef<HTMLFormElement>(null)
 
   const session = cart.payment_collection?.payment_sessions?.find(
-    (s) => s.status === "pending"
+    (s) => s.status === "pending" || s.status === "requires_action"
   )
 
-  const disabled = !stripe || !elements ? true : false
+  // Check if 3D Secure HTML content exists
+  const threeDSHtmlContent = session?.data?.threeDSHtmlContent
+
+  useEffect(() => {
+    // If 3DS HTML is present, auto-submit the form to show 3DS page
+    if (threeDSHtmlContent && formRef.current) {
+      console.log("[Iyzico] Auto-submitting 3D Secure form")
+      // Small delay to ensure form is rendered
+      setTimeout(() => {
+        formRef.current?.submit()
+      }, 100)
+    }
+  }, [threeDSHtmlContent])
 
   const handlePayment = async () => {
     setSubmitting(true)
 
-    if (!stripe || !elements || !card || !cart) {
+    // For iyzico, we need to submit the 3DS form
+    // The form will redirect to bank's 3DS page
+    // After verification, bank redirects to our callback URL
+    // Then we complete the order
+
+    if (!threeDSHtmlContent) {
+      setErrorMessage("3D Secure doğrulama bilgisi bulunamadı. Lütfen ödeme yöntemini tekrar seçin.")
       setSubmitting(false)
       return
     }
 
-    await stripe
-      .confirmCardPayment(session?.data.client_secret as string, {
-        payment_method: {
-          card: card,
-          billing_details: {
-            name:
-              cart.billing_address?.first_name +
-              " " +
-              cart.billing_address?.last_name,
-            address: {
-              city: cart.billing_address?.city ?? undefined,
-              country: cart.billing_address?.country_code ?? undefined,
-              line1: cart.billing_address?.address_1 ?? undefined,
-              line2: cart.billing_address?.address_2 ?? undefined,
-              postal_code: cart.billing_address?.postal_code ?? undefined,
-              state: cart.billing_address?.province ?? undefined,
-            },
-            email: cart.email,
-            phone: cart.billing_address?.phone ?? undefined,
-          },
-        },
-      })
-      .then(({ error, paymentIntent }) => {
-        if (error) {
-          const pi = error.payment_intent
+    // Form will auto-submit via useEffect
+  }
 
-          if (
-            (pi && pi.status === "requires_capture") ||
-            (pi && pi.status === "succeeded")
-          ) {
-            onPaymentCompleted()
-          }
+  if (threeDSHtmlContent) {
+    // Render 3D Secure HTML form
+    return (
+      <div className="space-y-4">
+        <div className="bg-blue-50 border-l-4 border-blue-600 p-4 rounded-r-lg">
+          <div className="flex items-start gap-3">
+            <svg className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <h4 className="text-sm font-semibold text-blue-900 mb-1">
+                🔒 Güvenli Ödeme Doğrulaması
+              </h4>
+              <p className="text-sm text-blue-800">
+                Bankanızın 3D Secure sayfasına yönlendiriliyorsunuz. Lütfen telefon SMS'inizdeki kodu girin.
+              </p>
+            </div>
+          </div>
+        </div>
 
-          setErrorMessage(error.message || null)
-          return
-        }
+        {/* Hidden form that will auto-submit to show 3DS page */}
+        <div
+          ref={formRef as any}
+          dangerouslySetInnerHTML={{ __html: threeDSHtmlContent }}
+        />
 
-        if (
-          (paymentIntent && paymentIntent.status === "requires_capture") ||
-          paymentIntent.status === "succeeded"
-        ) {
-          return onPaymentCompleted()
-        }
-
-        return
-      })
+        <div className="text-center py-4">
+          <div className="inline-block">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+            <p className="text-sm text-gray-600 mt-3">Yönlendiriliyor...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <>
       <Button
-        disabled={disabled || notReady}
+        disabled={notReady}
+        isLoading={submitting}
         onClick={handlePayment}
         size="large"
-        isLoading={submitting}
         data-testid={dataTestId}
       >
-        Place order
+        Siparişi Tamamla (3D Secure)
       </Button>
       <ErrorMessage
         error={errorMessage}
-        data-testid="stripe-payment-error-message"
+        data-testid="iyzico-payment-error-message"
       />
     </>
   )
@@ -180,7 +175,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
         size="large"
         data-testid="submit-order-button"
       >
-        Place order
+        Siparişi Tamamla
       </Button>
       <ErrorMessage
         error={errorMessage}

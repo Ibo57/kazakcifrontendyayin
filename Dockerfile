@@ -24,25 +24,15 @@ WORKDIR /app
 # Enable Corepack for Yarn 3.x support
 RUN corepack enable
 
-# Copy dependencies and yarn files from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/.yarn ./.yarn
-COPY --from=deps /app/.yarnrc.yml ./.yarnrc.yml
-COPY --from=deps /app/yarn.lock ./yarn.lock
-COPY --from=deps /app/package.json ./package.json
+# Copy everything
 COPY . .
 
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 
-# Build the application
-RUN \
-  if [ -f yarn.lock ]; then yarn build; \
-  elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then npm install -g pnpm && pnpm build; \
-  else yarn build; \
-  fi
+# Install and build
+RUN yarn install && yarn build
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner

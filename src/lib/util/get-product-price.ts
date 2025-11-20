@@ -11,19 +11,16 @@ export const getPricesForVariant = (variant: any) => {
   const calculatedPrice = variant.calculated_price
   
   // Medusa v2 structure
-  let calculatedAmount = calculatedPrice.calculated_amount
-  let originalAmount = calculatedPrice.original_amount
+  const calculatedAmount = calculatedPrice.calculated_amount
+  const originalAmount = calculatedPrice.original_amount
   const currencyCode = calculatedPrice.currency_code
 
   if (!calculatedAmount || !currencyCode) {
     return null
   }
 
-  // GEÇICI ÇÖZÜM: Admin panelinde fiyatlar TL olarak girilmiş ama kuruş bekleniyordu
-  // Backend'den gelen değerleri 100 ile çarpıyoruz
-  // DOĞRU ÇÖZÜM: Admin panelinde fiyatları kuruş cinsinden düzeltmek
-  calculatedAmount = calculatedAmount * 100
-  originalAmount = originalAmount * 100
+  // Medusa fiyatları zaten kuruş/cent cinsinden tutuyor (örn: 18900 kuruş = 189 TL)
+  // money.ts içindeki convertToLocale fonksiyonu otomatik olarak 100'e böler
 
   return {
     calculated_price_number: calculatedAmount,
