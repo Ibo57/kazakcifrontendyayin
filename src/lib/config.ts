@@ -10,4 +10,8 @@ export const sdk = new Medusa({
   baseUrl: MEDUSA_BACKEND_URL,
   debug: process.env.NODE_ENV === "development",
   publishableKey: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+  // Increase timeout to 30 seconds for slow backend responses
+  fetchConfig: {
+    timeout: 30000,
+  },
 })
