@@ -77,10 +77,18 @@ const IyzicoPaymentButton = ({
   // Check if 3D Secure HTML content exists
   const threeDSHtmlContent = session?.data?.threeDSHtmlContent
 
+  // Log the actual HTML content for debugging
+  if (threeDSHtmlContent) {
+    console.log("[PaymentButton] 3DS HTML length:", threeDSHtmlContent.length)
+    console.log("[PaymentButton] 3DS HTML preview:", threeDSHtmlContent.substring(0, 500))
+  }
+
   useEffect(() => {
     // If 3DS HTML is present, auto-submit the form to show 3DS page
     if (threeDSHtmlContent && formRef.current) {
       console.log("[Iyzico] Auto-submitting 3D Secure form")
+      console.log("[Iyzico] formRef.current HTML:", formRef.current.innerHTML.substring(0, 300))
+
       // Small delay to ensure form is rendered
       setTimeout(() => {
         // Find the form element inside the div
@@ -90,6 +98,18 @@ const IyzicoPaymentButton = ({
           form.submit()
         } else {
           console.error("[Iyzico] Form not found in 3DS HTML content")
+          console.log("[Iyzico] Available HTML:", formRef.current?.innerHTML)
+
+          // Try to find and execute any script tags
+          const scripts = formRef.current?.querySelectorAll('script')
+          if (scripts && scripts.length > 0) {
+            console.log("[Iyzico] Found", scripts.length, "script tags, executing...")
+            scripts.forEach(script => {
+              const newScript = document.createElement('script')
+              newScript.textContent = script.textContent
+              document.body.appendChild(newScript)
+            })
+          }
         }
       }, 100)
     }
