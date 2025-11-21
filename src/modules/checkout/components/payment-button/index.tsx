@@ -83,7 +83,14 @@ const IyzicoPaymentButton = ({
       console.log("[Iyzico] Auto-submitting 3D Secure form")
       // Small delay to ensure form is rendered
       setTimeout(() => {
-        formRef.current?.submit()
+        // Find the form element inside the div
+        const form = formRef.current?.querySelector('form')
+        if (form) {
+          console.log("[Iyzico] Found form, submitting...")
+          form.submit()
+        } else {
+          console.error("[Iyzico] Form not found in 3DS HTML content")
+        }
       }, 100)
     }
   }, [threeDSHtmlContent])
