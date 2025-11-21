@@ -281,6 +281,8 @@ export async function authorizePaymentSession(
     sessionId
   })
 
+  const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+
   try {
     const response = await fetch(
       `${backendUrl}/store/payment-collections/${paymentCollectionId}/payment-sessions/${sessionId}/authorize`,
@@ -288,6 +290,7 @@ export async function authorizePaymentSession(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-publishable-api-key": publishableKey || "",
         },
         credentials: "include",
       }

@@ -14,7 +14,8 @@
       "Bash(vercel list:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(vercel inspect:*)"
     ],
     "deny": [],
     "ask": []
