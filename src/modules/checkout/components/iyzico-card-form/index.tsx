@@ -137,7 +137,10 @@ export default function IyzicoCardForm({ onCardDataChange, onValidChange }: Iyzi
             value={cardHolder}
             onChange={(e) => {
               // Sadece harflere, Türkçe karakterlere ve boşluklara izin ver
+              const rawValue = e.target.value
+              console.log("Raw input value:", rawValue, "Length:", rawValue.length)
               const value = e.target.value.replace(/[^a-zA-ZğüşıöçĞÜŞİÖÇ ]/g, "")
+              console.log("After filter:", value, "Length:", value.length)
               handleChange("cardHolder", value)
             }}
             className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
