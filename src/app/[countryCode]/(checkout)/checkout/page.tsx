@@ -20,7 +20,7 @@ export default async function Checkout({ searchParams }: { searchParams: Promise
   // The Review component will handle placing the order
   const isReturningFrom3DS = params?.payment_status === "success"
 
-  const cart = await retrieveCart()
+  let cart = await retrieveCart()
 
   if (!cart && !isReturningFrom3DS) {
     return notFound()
@@ -28,21 +28,28 @@ export default async function Checkout({ searchParams }: { searchParams: Promise
 
   const customer = await retrieveCustomer()
 
-  // If returning from 3DS but cart is null, show loading state
-  // The Review component will handle order placement
+  // If returning from 3DS but cart is null, try fetching again
   if (isReturningFrom3DS && !cart) {
-    return (
-      <div className="bg-gray-50 min-h-screen py-8">
-        <div className="content-container">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Siparişiniz işleniyor...</p>
+    // Try to fetch cart one more time
+    cart = await retrieveCart().catch(() => null)
+
+    if (!cart) {
+      // Cart still not found, something went wrong
+      return (
+        <div className="bg-gray-50 min-h-screen py-8">
+          <div className="content-container">
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-center">
+                <div className="text-red-600 text-xl mb-4">⚠️</div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Bir sorun oluştu</h2>
+                <p className="text-gray-600 mb-4">Sipariş bilgileriniz bulunamadı.</p>
+                <p className="text-sm text-gray-500">Lütfen müşteri hizmetleri ile iletişime geçin.</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    )
+      )
+    }
   }
 
   return (
