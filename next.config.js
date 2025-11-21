@@ -13,11 +13,9 @@ const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
  */
 const nextConfig = {
   reactStrictMode: true,
-  // Standalone output enabled for Docker
-  output: 'standalone',
   // Make MEDUSA_BACKEND_URL available at runtime
   env: {
-    MEDUSA_BACKEND_URL: process.env.MEDUSA_BACKEND_URL || 'http://127.0.0.1:9001',
+    MEDUSA_BACKEND_URL: process.env.MEDUSA_BACKEND_URL || 'https://admin.kazakci.com',
   },
   logging: {
     fetches: {

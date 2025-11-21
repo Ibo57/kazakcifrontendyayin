@@ -7,7 +7,14 @@
       "Bash(npm run build:*)",
       "Bash(npm install)",
       "Bash(curl -I https://admin.kazakci.com)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(vercel login)",
+      "Bash(vercel logs:*)",
+      "Bash(vercel list:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
