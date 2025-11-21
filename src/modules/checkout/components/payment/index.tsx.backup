@@ -2,7 +2,7 @@
 
 import { RadioGroup } from "@headlessui/react"
 import { isIyzico as isIyzicoFunc, paymentInfoMap } from "@lib/constants"
-import { initiatePaymentSession } from "@lib/data/cart"
+import { initiatePaymentSession, authorizePaymentSession, retrieveCartFresh } from "@lib/data/cart"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -22,7 +22,7 @@ const Payment = ({
   availablePaymentMethods: any[]
 }) => {
   const activeSession = cart.payment_collection?.payment_sessions?.find(
-    (paymentSession: any) => paymentSession.status === "pending" || paymentSession.status === "requires_more"
+    (paymentSession: any) => paymentSession.status === "pending"
   )
 
   const [isLoading, setIsLoading] = useState(false)
@@ -80,7 +80,7 @@ const Payment = ({
       const checkActiveSession =
         activeSession?.provider_id === selectedPaymentMethod
 
-      // For iyzico, we need to pass card data
+      // For iyzico, we need to pass card data and authorize
       if (isIyzicoFunc(selectedPaymentMethod)) {
         if (!iyzicoCardComplete || !iyzicoCardData) {
           setError("Lütfen kart bilgilerinizi eksiksiz doldurun")
@@ -92,19 +92,48 @@ const Payment = ({
           console.log("[Payment] Starting iyzico payment flow...")
           console.log("[Payment] Card data:", iyzicoCardData)
 
-          // Initialize payment session with card data
-          // This will return session with 3DS HTML content
-          await initiatePaymentSession(cart, {
+          // Step 1: Initialize payment session with card data
+          const sessionResult = await initiatePaymentSession(cart, {
             provider_id: selectedPaymentMethod,
             data: {
               payment_method_data: iyzicoCardData
             }
           })
 
-          console.log("[Payment] Session created, navigating to review...")
+          console.log("[Payment] Session result:", sessionResult)
 
-          // Navigate to review where 3DS HTML will be displayed
-          // iyzico handles authorization via 3DS callback
+          // Step 2: Retrieve fresh cart to get the newly created session (no cache)
+          const freshCart = await retrieveCartFresh()
+          console.log("[Payment] Fresh cart:", freshCart)
+
+          if (!freshCart) {
+            throw new Error("Cart not found")
+          }
+
+          // Step 3: Get the payment session ID from fresh cart
+          const paymentSession = freshCart?.payment_collection?.payment_sessions?.find(
+            (s: any) => s.provider_id === selectedPaymentMethod && s.status === "pending"
+          )
+
+          console.log("[Payment] Found payment session:", paymentSession)
+
+          if (!paymentSession) {
+            console.error("[Payment] No payment session found")
+            setError("Ödeme oturumu oluşturulamadı")
+            setIsLoading(false)
+            return
+          }
+
+          // Step 4: Authorize payment (triggers 3D Secure)
+          console.log("[Payment] Authorizing payment session:", paymentSession.id)
+          const paymentCollectionId = freshCart.payment_collection?.id
+          if (!paymentCollectionId) {
+            throw new Error("Payment collection ID not found")
+          }
+          const authResult = await authorizePaymentSession(paymentCollectionId, paymentSession.id)
+          console.log("[Payment] Authorization result:", authResult)
+
+          // Step 4: Navigate to review (3DS HTML will be shown there)
           return router.push(
             pathname + "?" + createQueryString("step", "review"),
             {
@@ -190,24 +219,24 @@ const Payment = ({
                     </p>
                   </div>
                   <div className="flex items-center gap-3 flex-wrap">
-                    <Image
-                      src="/visa-logo.svg"
-                      alt="Visa"
-                      width={50}
+                    <Image 
+                      src="/visa-logo.svg" 
+                      alt="Visa" 
+                      width={50} 
                       height={30}
                       className="h-8 w-auto"
                     />
-                    <Image
-                      src="/mastercard-logo.svg"
-                      alt="MasterCard"
-                      width={50}
+                    <Image 
+                      src="/mastercard-logo.svg" 
+                      alt="MasterCard" 
+                      width={50} 
                       height={30}
                       className="h-8 w-auto"
                     />
-                    <Image
-                      src="/iyzico-logo.png"
-                      alt="iyzico ile Öde"
-                      width={100}
+                    <Image 
+                      src="/iyzico-logo.png" 
+                      alt="iyzico ile Öde" 
+                      width={100} 
                       height={30}
                       className="h-9 w-auto"
                     />
