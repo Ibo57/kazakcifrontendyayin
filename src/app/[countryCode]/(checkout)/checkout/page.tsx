@@ -1,11 +1,11 @@
 import { retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
+import OrderCompletionHandler from "@modules/checkout/components/order-completion-handler"
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
 import CheckoutSummary from "@modules/checkout/templates/checkout-summary"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { headers } from "next/headers"
 
 export const metadata: Metadata = {
   title: "Ödeme - Kazakçı",
@@ -30,21 +30,17 @@ export default async function Checkout({ searchParams }: { searchParams: Promise
 
   // If returning from 3DS but cart is null, try fetching again
   if (isReturningFrom3DS && !cart) {
-    // Try to fetch cart one more time
+    // Try to fetch cart one more time (it might have been cached)
     cart = await retrieveCart().catch(() => null)
 
+    // If cart is still null, use OrderCompletionHandler to place order
     if (!cart) {
-      // Cart still not found, something went wrong
       return (
         <div className="bg-gray-50 min-h-screen py-8">
           <div className="content-container">
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="text-center">
-                <div className="text-red-600 text-xl mb-4">⚠️</div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Bir sorun oluştu</h2>
-                <p className="text-gray-600 mb-4">Sipariş bilgileriniz bulunamadı.</p>
-                <p className="text-sm text-gray-500">Lütfen müşteri hizmetleri ile iletişime geçin.</p>
-              </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-8">Ödeme</h1>
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <OrderCompletionHandler />
             </div>
           </div>
         </div>
