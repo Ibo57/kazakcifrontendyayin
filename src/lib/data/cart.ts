@@ -50,6 +50,34 @@ export async function retrieveCart(cartId?: string, fields?: string) {
     .catch(() => null)
 }
 
+/**
+ * Retrieves cart without cache - used for payment flows where fresh data is critical
+ */
+export async function retrieveCartFresh(cartId?: string) {
+  const id = cartId || (await getCartId())
+  const fields = "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name, *payment_collection, *payment_collection.payment_sessions"
+
+  if (!id) {
+    return null
+  }
+
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  return await sdk.client
+    .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${id}`, {
+      method: "GET",
+      query: {
+        fields
+      },
+      headers,
+      cache: "no-store",
+    })
+    .then(({ cart }: { cart: HttpTypes.StoreCart }) => cart)
+    .catch(() => null)
+}
+
 export async function getOrSetCart(countryCode: string) {
   const region = await getRegion(countryCode)
 

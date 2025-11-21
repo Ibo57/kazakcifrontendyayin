@@ -2,7 +2,7 @@
 
 import { RadioGroup } from "@headlessui/react"
 import { isIyzico as isIyzicoFunc, paymentInfoMap } from "@lib/constants"
-import { initiatePaymentSession, authorizePaymentSession, retrieveCart } from "@lib/data/cart"
+import { initiatePaymentSession, authorizePaymentSession, retrieveCartFresh } from "@lib/data/cart"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -102,8 +102,8 @@ const Payment = ({
 
           console.log("[Payment] Session result:", sessionResult)
 
-          // Step 2: Retrieve fresh cart to get the newly created session
-          const freshCart = await retrieveCart()
+          // Step 2: Retrieve fresh cart to get the newly created session (no cache)
+          const freshCart = await retrieveCartFresh()
           console.log("[Payment] Fresh cart:", freshCart)
 
           if (!freshCart) {
