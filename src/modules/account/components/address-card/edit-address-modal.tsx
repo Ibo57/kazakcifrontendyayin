@@ -188,7 +188,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
                   data-testid="postal-code-input"
                 />
                 <Input
-                  label="Şehir"
+                  label="İlçe"
                   name="city"
                   required
                   autoComplete="locality"

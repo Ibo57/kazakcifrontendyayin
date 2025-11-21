@@ -156,7 +156,7 @@ const ShippingAddress = ({
           data-testid="shipping-postal-code-input"
         />
         <Input
-          label="Şehir"
+          label="İlçe"
           name="shipping_address.city"
           autoComplete="address-level2"
           value={formData["shipping_address.city"]}

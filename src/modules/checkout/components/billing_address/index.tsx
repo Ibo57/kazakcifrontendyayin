@@ -75,7 +75,7 @@ const BillingAddress = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
           data-testid="billing-postal-input"
         />
         <Input
-          label="Şehir"
+          label="İlçe"
           name="billing_address.city"
           autoComplete="address-level2"
           value={formData["billing_address.city"]}
