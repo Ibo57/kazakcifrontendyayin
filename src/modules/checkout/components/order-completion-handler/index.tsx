@@ -16,14 +16,29 @@ export default function OrderCompletionHandler() {
 
     placeOrder()
       .then((result) => {
-        if (result.type === "order") {
-          console.log("[OrderCompletionHandler] Order placed successfully, redirecting...")
-          const countryCode = result.order.shipping_address?.country_code?.toLowerCase() || "tr"
-          window.location.href = `/${countryCode}/order/${result.order.id}/confirmed`
+        console.log("[OrderCompletionHandler] placeOrder result:", result)
+        console.log("[OrderCompletionHandler] result.type:", result?.type)
+
+        if (result?.type === "order") {
+          console.log("[OrderCompletionHandler] Order placed successfully!")
+          console.log("[OrderCompletionHandler] Order ID:", result.order?.id)
+          console.log("[OrderCompletionHandler] Order shipping address:", result.order?.shipping_address)
+
+          const countryCode = result.order?.shipping_address?.country_code?.toLowerCase() || "tr"
+          const redirectUrl = `/${countryCode}/order/${result.order.id}/confirmed`
+
+          console.log("[OrderCompletionHandler] Redirecting to:", redirectUrl)
+          window.location.href = redirectUrl
+        } else {
+          console.warn("[OrderCompletionHandler] Unexpected result type:", result?.type)
+          console.log("[OrderCompletionHandler] Full result:", JSON.stringify(result))
+          setStatus("error")
+          setErrorMessage("Beklenmeyen yanıt formatı")
         }
       })
       .catch((error) => {
         console.error("[OrderCompletionHandler] Failed to place order:", error)
+        console.error("[OrderCompletionHandler] Error details:", error.message, error.stack)
         setStatus("error")
         setErrorMessage(error.message || "Sipariş oluşturulamadı")
       })
