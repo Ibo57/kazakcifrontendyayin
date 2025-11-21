@@ -135,6 +135,12 @@ export default function IyzicoCardForm({ onCardDataChange, onValidChange }: Iyzi
             type="text"
             placeholder="Ahmet Yılmaz"
             value={cardHolder}
+            onKeyDown={(e) => {
+              console.log("[KEYDOWN] Key:", e.key, "Code:", e.code, "KeyCode:", e.keyCode)
+              if (e.key === " " || e.code === "Space" || e.keyCode === 32) {
+                console.log("[SPACE KEY DETECTED!]")
+              }
+            }}
             onChange={(e) => {
               // Sadece harflere, Türkçe karakterlere ve boşluklara izin ver
               const rawValue = e.target.value
