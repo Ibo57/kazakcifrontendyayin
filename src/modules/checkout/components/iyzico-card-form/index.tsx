@@ -133,7 +133,7 @@ export default function IyzicoCardForm({ onCardDataChange, onValidChange }: Iyzi
           <Input
             id="card-holder"
             type="text"
-            placeholder="Kart Üzerindeki İsim Soyisim"
+            placeholder="Ahmet Yılmaz"
             value={cardHolder}
             onChange={(e) => {
               // Sadece harflere ve boşluklara izin ver - uppercase yapma
@@ -141,6 +141,8 @@ export default function IyzicoCardForm({ onCardDataChange, onValidChange }: Iyzi
               handleChange("cardHolder", value)
             }}
             className="mt-1"
+            autoComplete="cc-name"
+            maxLength={50}
           />
         </div>
 
