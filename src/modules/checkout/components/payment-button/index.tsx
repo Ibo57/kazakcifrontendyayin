@@ -74,13 +74,19 @@ const IyzicoPaymentButton = ({
     hasThreeDSHtml: !!session?.data?.threeDSHtmlContent
   })
 
-  // Check if 3D Secure HTML content exists
-  const threeDSHtmlContent = session?.data?.threeDSHtmlContent
+  // Check if 3D Secure HTML content exists and decode it (iyzico returns Base64)
+  let threeDSHtmlContent = session?.data?.threeDSHtmlContent
 
-  // Log the actual HTML content for debugging
   if (threeDSHtmlContent) {
-    console.log("[PaymentButton] 3DS HTML length:", threeDSHtmlContent.length)
-    console.log("[PaymentButton] 3DS HTML preview:", threeDSHtmlContent.substring(0, 500))
+    try {
+      // Decode Base64-encoded HTML from iyzico
+      const decodedHtml = atob(threeDSHtmlContent)
+      console.log("[PaymentButton] Decoded 3DS HTML length:", decodedHtml.length)
+      console.log("[PaymentButton] Decoded 3DS HTML preview:", decodedHtml.substring(0, 300))
+      threeDSHtmlContent = decodedHtml
+    } catch (e) {
+      console.error("[PaymentButton] Failed to decode Base64 HTML:", e)
+    }
   }
 
   useEffect(() => {
