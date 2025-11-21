@@ -57,7 +57,7 @@ const IyzicoPaymentButton = ({
   const formRef = useRef<HTMLFormElement>(null)
 
   const session = cart.payment_collection?.payment_sessions?.find(
-    (s) => s.status === "pending" || s.status === "requires_action"
+    (s) => s.status === "pending" || s.status === "requires_more"
   )
 
   // Check if 3D Secure HTML content exists
