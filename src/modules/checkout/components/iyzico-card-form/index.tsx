@@ -130,17 +130,17 @@ export default function IyzicoCardForm({ onCardDataChange, onValidChange }: Iyzi
           <Label htmlFor="card-holder" className="text-sm font-medium text-gray-700">
             Kart Üzerindeki İsim
           </Label>
-          <Input
+          <input
             id="card-holder"
             type="text"
             placeholder="Ahmet Yılmaz"
             value={cardHolder}
             onChange={(e) => {
-              // Sadece harflere ve boşluklara izin ver - uppercase yapma
-              const value = e.target.value.replace(/[^a-zA-ZğüşıöçĞÜŞİÖÇ\s]/g, "")
+              // Sadece harflere, Türkçe karakterlere ve boşluklara izin ver
+              const value = e.target.value.replace(/[^a-zA-ZğüşıöçĞÜŞİÖÇ ]/g, "")
               handleChange("cardHolder", value)
             }}
-            className="mt-1"
+            className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
             autoComplete="cc-name"
             maxLength={50}
           />
