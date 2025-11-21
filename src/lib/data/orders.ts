@@ -110,3 +110,27 @@ export const declineTransferRequest = async (id: string, token: string) => {
     .then(({ order }) => ({ success: true, error: null, order }))
     .catch((err) => ({ success: false, error: err.message, order: null }))
 }
+
+export const requestReturn = async (
+  orderId: string,
+  items: Array<{ id: string; quantity: number; reason?: string }>,
+  note?: string
+): Promise<{
+  success: boolean
+  error: string | null
+  return?: any
+}> => {
+  const headers = await getAuthHeaders()
+
+  return await sdk.client
+    .fetch<{ return: any }>(`/store/orders/${orderId}/returns`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        items,
+        note,
+      }),
+    })
+    .then(({ return: returnData }) => ({ success: true, error: null, return: returnData }))
+    .catch((err) => ({ success: false, error: err.message || "İade talebi oluşturulamadı" }))
+}
