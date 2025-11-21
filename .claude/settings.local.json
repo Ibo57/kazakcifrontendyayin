@@ -18,7 +18,8 @@
       "Bash(vercel inspect:*)",
       "Bash(ssh:*)",
       "WebSearch",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(scp:*)"
     ],
     "deny": [],
     "ask": []

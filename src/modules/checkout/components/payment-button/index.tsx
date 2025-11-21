@@ -60,6 +60,20 @@ const IyzicoPaymentButton = ({
     (s) => s.status === "pending" || s.status === "requires_more"
   )
 
+  console.log("[PaymentButton] Debug info:", {
+    hasPaymentCollection: !!cart.payment_collection,
+    sessionsCount: cart.payment_collection?.payment_sessions?.length || 0,
+    sessions: cart.payment_collection?.payment_sessions?.map(s => ({
+      id: s.id,
+      status: s.status,
+      provider_id: s.provider_id,
+      hasThreeDSHtml: !!s.data?.threeDSHtmlContent
+    })),
+    foundSession: !!session,
+    sessionStatus: session?.status,
+    hasThreeDSHtml: !!session?.data?.threeDSHtmlContent
+  })
+
   // Check if 3D Secure HTML content exists
   const threeDSHtmlContent = session?.data?.threeDSHtmlContent
 
