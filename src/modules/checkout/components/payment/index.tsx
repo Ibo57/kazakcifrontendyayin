@@ -102,25 +102,31 @@ const Payment = ({
 
           console.log("[Payment] Session result:", sessionResult)
 
-          // Step 2: Get the payment session ID from result
-          // Check if result is the cart object or wrapped
-          const resultCart = sessionResult?.cart || sessionResult
-          const paymentSession = resultCart?.payment_collection?.payment_sessions?.find(
-            (s: any) => s.provider_id === selectedPaymentMethod
+          // Step 2: Retrieve fresh cart to get the newly created session
+          const freshCart = await retrieveCart()
+          console.log("[Payment] Fresh cart:", freshCart)
+
+          if (!freshCart) {
+            throw new Error("Cart not found")
+          }
+
+          // Step 3: Get the payment session ID from fresh cart
+          const paymentSession = freshCart?.payment_collection?.payment_sessions?.find(
+            (s: any) => s.provider_id === selectedPaymentMethod && s.status === "pending"
           )
 
           console.log("[Payment] Found payment session:", paymentSession)
 
           if (!paymentSession) {
-            console.error("[Payment] No payment session found in result")
+            console.error("[Payment] No payment session found")
             setError("Ödeme oturumu oluşturulamadı")
             setIsLoading(false)
             return
           }
 
-          // Step 3: Authorize payment (triggers 3D Secure)
+          // Step 4: Authorize payment (triggers 3D Secure)
           console.log("[Payment] Authorizing payment session:", paymentSession.id)
-          const paymentCollectionId = cart.payment_collection?.id
+          const paymentCollectionId = freshCart.payment_collection?.id
           if (!paymentCollectionId) {
             throw new Error("Payment collection ID not found")
           }
