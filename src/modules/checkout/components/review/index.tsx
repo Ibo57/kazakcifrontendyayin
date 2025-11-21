@@ -18,7 +18,7 @@ const Review = ({ cart }: { cart: any }) => {
   const previousStepsCompleted =
     cart.shipping_address &&
     cart.shipping_methods.length > 0 &&
-    (cart.payment_collection?.payment_sessions?.some((session: any) => session.status === "pending") || paidByGiftcard)
+    (cart.payment_collection?.payment_sessions?.some((session: any) => session.status === "pending" || session.status === "requires_more") || paidByGiftcard)
 
   return (
     <div className="bg-white">
