@@ -199,10 +199,14 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
 
   const onPaymentCompleted = async () => {
     await placeOrder()
+      .then((result) => {
+        if (result.type === "order") {
+          const countryCode = result.order.shipping_address?.country_code?.toLowerCase() || "tr"
+          window.location.href = `/${countryCode}/order/${result.order.id}/confirmed`
+        }
+      })
       .catch((err) => {
         setErrorMessage(err.message)
-      })
-      .finally(() => {
         setSubmitting(false)
       })
   }

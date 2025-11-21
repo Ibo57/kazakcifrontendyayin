@@ -19,7 +19,9 @@
       "Bash(ssh:*)",
       "WebSearch",
       "Bash(cat:*)",
-      "Bash(scp:*)"
+      "Bash(scp:*)",
+      "Bash(git checkout:*)",
+      "Bash(vercel:*)"
     ],
     "deny": [],
     "ask": []
