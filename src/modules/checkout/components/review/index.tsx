@@ -23,16 +23,13 @@ const Review = ({ cart }: { cart: any }) => {
       console.log("[Review] 3DS callback success detected, placing order...")
       setIsPlacingOrder(true)
 
-      placeOrder()
-        .then(() => {
-          console.log("[Review] Order placed successfully!")
-          router.push(`/order/confirmed/${cart.id}`)
-        })
-        .catch((error) => {
-          console.error("[Review] Failed to place order:", error)
-          // Show error message to user
-          alert("Sipariş oluşturulamadı. Lütfen müşteri hizmetleri ile iletişime geçin.")
-        })
+      // placeOrder() will handle redirect internally via server-side redirect()
+      placeOrder().catch((error) => {
+        console.error("[Review] Failed to place order:", error)
+        setIsPlacingOrder(false)
+        // Show error message to user
+        alert("Sipariş oluşturulamadı. Lütfen müşteri hizmetleri ile iletişime geçin.")
+      })
     }
   }, [paymentStatus, paymentId, cart, isPlacingOrder, router])
 
