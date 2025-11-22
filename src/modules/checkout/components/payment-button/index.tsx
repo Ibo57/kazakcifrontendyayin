@@ -10,11 +10,13 @@ import ErrorMessage from "../error-message"
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart
   "data-testid": string
+  disabled?: boolean
 }
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({
   cart,
   "data-testid": dataTestId,
+  disabled = false,
 }) => {
   const notReady =
     !cart ||
@@ -32,11 +34,12 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
           notReady={notReady}
           cart={cart}
           data-testid={dataTestId}
+          disabled={disabled}
         />
       )
     case isManual(paymentSession?.provider_id):
       return (
-        <ManualTestPaymentButton notReady={notReady} data-testid={dataTestId} />
+        <ManualTestPaymentButton notReady={notReady} data-testid={dataTestId} disabled={disabled} />
       )
     default:
       return <Button disabled>Ödeme yöntemi seçin</Button>
@@ -47,10 +50,12 @@ const IyzicoPaymentButton = ({
   cart,
   notReady,
   "data-testid": dataTestId,
+  disabled = false,
 }: {
   cart: HttpTypes.StoreCart
   notReady: boolean
   "data-testid"?: string
+  disabled?: boolean
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -90,8 +95,8 @@ const IyzicoPaymentButton = ({
   }
 
   useEffect(() => {
-    // If 3DS HTML is present, auto-submit the form to show 3DS page
-    if (threeDSHtmlContent && formRef.current) {
+    // If 3DS HTML is present AND not disabled, auto-submit the form to show 3DS page
+    if (threeDSHtmlContent && formRef.current && !disabled) {
       console.log("[Iyzico] Auto-submitting 3D Secure form")
       console.log("[Iyzico] formRef.current HTML:", formRef.current.innerHTML.substring(0, 300))
 
@@ -119,7 +124,7 @@ const IyzicoPaymentButton = ({
         }
       }, 100)
     }
-  }, [threeDSHtmlContent])
+  }, [threeDSHtmlContent, disabled])
 
   const handlePayment = async () => {
     setSubmitting(true)

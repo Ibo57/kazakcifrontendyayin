@@ -21,7 +21,10 @@
       "Bash(cat:*)",
       "Bash(scp:*)",
       "Bash(git checkout:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "WebFetch(domain:docs.medusajs.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": [],
     "ask": []
